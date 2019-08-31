@@ -40,11 +40,6 @@ class Concentration {
                 }
                 cards[index].isFaceUp = true
             } else {
-                
-                for flipDownIndex in cards.indices {
-                    cards[flipDownIndex].isFaceUp = false
-                }
-                cards[index].isFaceUp = true
                 indexOfOneAndOnlyFaceUpCard = index
             }
         }
