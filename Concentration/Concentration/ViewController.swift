@@ -10,8 +10,10 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    lazy var game = Concentration(numberOfPairsOfCards: (cardButtons.count+1)/2)
-    
+    lazy var game = Concentration(numberOfPairsOfCards:numberOfPairsOfCards)
+    var numberOfPairsOfCards : Int {
+        return (cardButtons.count+1)/2 //don't need get if only get
+    }
     var flipCount = 0 {
         didSet { //everytime flipCount changes
             flipCountLabel.text = "Flips \(flipCount)"
