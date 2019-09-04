@@ -10,19 +10,12 @@ import Foundation
 
 struct Concentration {
     private (set) var cards = [Card]()
-    private var indexOfOneAndOnlyFaceUpCard : Int? {
-        get {
-            var foundIndex: Int?
-            for index in cards.indices {
-                if cards[index].isFaceUp {
-                    if foundIndex == nil {
-                        foundIndex = index
-                    } else {
-                        return nil
-                    }
-                }
-            }
-            return foundIndex
+    private var indexOfOneAndOnlyFaceUpCard : Int? { //use closure to improve
+        get { //filter => returns true then puts it in new array
+            //simplified due to extension Collection
+            //let faceUpCardIndices = cards.indices.filter {cards[$0].isFaceUp}
+            //return faceUpCardIndices.count == 1 ? faceUpCardIndices.first : nil
+            return cards.indices.filter{cards[$0].isFaceUp}.oneAndOnly
         }
         set {
             for index in cards.indices {
@@ -52,10 +45,14 @@ struct Concentration {
             let card = Card()
             cards += [card,card]
         }
+        //cards.shuffle()
         
-        
-        
-        //TODO: shuffle the cards
-        
+    }
+}
+
+extension Collection { //collection is generic type
+    //strings, arrays, countableRanges all implement oneAndOnly
+    var oneAndOnly : Element? { //generic is type element
+        return count == 1 ? first : nil
     }
 }
