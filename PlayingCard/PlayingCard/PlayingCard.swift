@@ -17,7 +17,7 @@ struct PlayingCard: CustomStringConvertible
     
     enum Suit: String, CustomStringConvertible {
         
-        case spades = "♠"
+        case spades = "♠" 
         case hearts = "♥"
         case clubs = "♣"
         case diamonds = "♦"
@@ -28,7 +28,7 @@ struct PlayingCard: CustomStringConvertible
         var description: String {
             switch self {
             case .spades: return "♠"
-            case .hearts: return "❤️"
+            case .hearts: return "♥"
             case .clubs: return "♣"
             case .diamonds: return "♦"
             }
