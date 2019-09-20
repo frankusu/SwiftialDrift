@@ -14,8 +14,8 @@ class PlayingCardView: UIView {
     var suit: String = "♥" { didSet{ setNeedsDisplay(); setNeedsLayout() } }
     var isFaceUp: Bool = true { didSet{ setNeedsDisplay(); setNeedsLayout() } }
     
-    private func centeredAttributedString(_ string: String, font: CGFloat) -> NSAttributedString {
-        var font = UIFont.preferredFont(forTextStyle: .body).withSize(font)
+    private func centeredAttributedString(_ string: String, fontSize: CGFloat) -> NSAttributedString {
+        var font = UIFont.preferredFont(forTextStyle: .body).withSize(fontSize)
         //don't forget UIFontMetrics. Accessibility font size slider
         font = UIFontMetrics(forTextStyle: .body).scaledFont(for: font)
         let paragraphStyle = NSMutableParagraphStyle()
@@ -41,7 +41,7 @@ class PlayingCardView: UIView {
     }
     
     private var cornerString: NSAttributedString {
-        return centeredAttributedString(rankString + "\n" + suit, font: cornerFontSize)
+        return centeredAttributedString(rankString + "\n" + suit, fontSize: cornerFontSize)
     }
     //when Accessibility font changes the app needs to know to redraw
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -64,12 +64,58 @@ class PlayingCardView: UIView {
             .offSetBy(dx: -cornerOffset, dy: -cornerOffset)
             .offSetBy(dx: -lowerRightCornerLabel.frame.size.width, dy: -lowerRightCornerLabel.frame.size.height)
     }
+    
+    private func drawPips() {
+        
+        let pipsPerRowForRank = [[0],[1],[1,1],[1,1,1],[2,2],[2,1,2],[2,2,2],[2,1,2,2],[2,2,2,2],[2,2,1,2,2],[2,2,2,2,2]]
+        
+        func createPipString(thatFits pipRect: CGRect) -> NSAttributedString {
+            let maxVerticalPipCount = CGFloat(pipsPerRowForRank.reduce(0) { max($1.count, $0) }) //$1->[Int], $0 -> # in reduce()
+            let maxHorizontalPipCount = CGFloat(pipsPerRowForRank.reduce(0) { max($1.max() ?? 0 , $0) })
+            let verticalPipRowSpacing = pipRect.size.height / maxVerticalPipCount
+            let attemptedPipString = centeredAttributedString(suit, fontSize: verticalPipRowSpacing)
+            let probablyOkayPipStringFontSize = verticalPipRowSpacing / (attemptedPipString.size().height / verticalPipRowSpacing)
+            let probablyOkayPipString = centeredAttributedString(suit, fontSize: probablyOkayPipStringFontSize)
+            if probablyOkayPipString.size().width > pipRect.size.width / maxHorizontalPipCount {
+                return centeredAttributedString(suit, fontSize: probablyOkayPipStringFontSize / (probablyOkayPipString.size().width / (pipRect.size.width / maxHorizontalPipCount)))
+            } else {
+                return probablyOkayPipString
+            }
+        }
+        if pipsPerRowForRank.indices.contains(rank) {
+            let pipsPerRow = pipsPerRowForRank[rank]
+            var pipRect = bounds.insetBy(dx: cornerOffset, dy: cornerOffset).insetBy(dx: cornerString.size().width, dy: cornerString.size().height / 2 )
+            let pipString = createPipString(thatFits: pipRect)
+            let pipRowSpacing = pipRect.size.height / CGFloat(pipsPerRow.count)
+            pipRect.size.height = pipString.size().height
+            pipRect.origin.y += (pipRowSpacing - pipRect.size.height) / 2
+            for pipCount in pipsPerRow {
+                switch pipCount {
+                case 1:
+                    pipString.draw(in: pipRect)
+                case 2:
+                    pipString.draw(in: pipRect.leftHalf)
+                    pipString.draw(in: pipRect.rightHalf)
+                default:
+                    break
+                }
+                pipRect.origin.y += pipRowSpacing
+            }
+            
+        }
+    }
     //setNeedsDisplay will eventually call this
     override func draw(_ rect: CGRect) {
         let roundedRect = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius)
         roundedRect.addClip()
         UIColor.white.setFill()
         roundedRect.fill()
+        
+        if let faceUpCard = UIImage(named: rankString + suit) {
+            faceUpCard.draw(in: bounds.zoom(by: SizeRatio.faceCardImageSizeToBoundSize))
+        } else {
+            drawPips()
+        }
         
     }
 }
@@ -107,7 +153,7 @@ extension CGRect {
         return CGRect(x: minX, y: minY, width: width/2, height: height)
     }
     var rightHalf : CGRect {
-        return CGRect(x: midX, y: midY, width: width/2, height: height)
+        return CGRect(x: midX, y: minY, width: width/2, height: height) //minY here. Tricky
     }
     func inset(by size: CGSize) -> CGRect {
         return insetBy(dx: size.width, dy: size.height)
