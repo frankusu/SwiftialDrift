@@ -7,13 +7,27 @@
 //
 
 import UIKit
-
+@IBDesignable // allows view in interface builder
 class PlayingCardView: UIView {
     //setNeedsLayout() change look of card for subviews
+    @IBInspectable
     var rank: Int = 5 { didSet{ setNeedsDisplay(); setNeedsLayout() } }
+    @IBInspectable
     var suit: String = "♥" { didSet{ setNeedsDisplay(); setNeedsLayout() } }
+    @IBInspectable
     var isFaceUp: Bool = true { didSet{ setNeedsDisplay(); setNeedsLayout() } }
     
+    //doesn't affect corners so don't need setNeedsLayout()
+    var faceCardScale: CGFloat = SizeRatio.faceCardImageSizeToBoundSize { didSet { setNeedsDisplay() }}
+    //handler for pinch gesture
+    @objc func adjustFaceCardScale(byHandlingGestureRecognizedBy recognizer: UIPinchGestureRecognizer) {
+        switch recognizer.state {
+        case .changed,.ended:
+            faceCardScale *= recognizer.scale
+            recognizer.scale = 1.0 //don't want exponetial, so reset it back to 1.0 each time
+        default: break
+        }
+    }
     private func centeredAttributedString(_ string: String, fontSize: CGFloat) -> NSAttributedString {
         var font = UIFont.preferredFont(forTextStyle: .body).withSize(fontSize)
         //don't forget UIFontMetrics. Accessibility font size slider
@@ -110,13 +124,17 @@ class PlayingCardView: UIView {
         roundedRect.addClip()
         UIColor.white.setFill()
         roundedRect.fill()
-        
-        if let faceUpCard = UIImage(named: rankString + suit) {
-            faceUpCard.draw(in: bounds.zoom(by: SizeRatio.faceCardImageSizeToBoundSize))
+        if isFaceUp {
+            if let faceUpCard = UIImage(named: rankString + suit, in: Bundle(for: self.classForCoder), compatibleWith: traitCollection) {
+                faceUpCard.draw(in: bounds.zoom(by: faceCardScale))
+            } else {
+                drawPips()
+            }
         } else {
-            drawPips()
+            if let cardBackImage = UIImage(named: "cardback", in: Bundle(for: self.classForCoder), compatibleWith: traitCollection) {
+                cardBackImage.draw(in: bounds)
+            }
         }
-        
     }
 }
 extension PlayingCardView {
