@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ConcentrationViewController: UIViewController {
     
     private lazy var game = Concentration(numberOfPairsOfCards:numberOfPairsOfCards)
     var numberOfPairsOfCards : Int {
@@ -19,7 +19,13 @@ class ViewController: UIViewController {
             updateFlipCountLabel()
         }
     }
-    
+    var theme: String? {
+        didSet {
+            emojiChoices = theme ?? ""
+            emoji = [:]
+            updateViewFromModel() // will update to new theme
+        }
+    }
     private var emojiChoices = "👻👹👿☠️👽🎃🦇🧛🏿‍♀️"
     private var emoji = [Card: String]()
     @IBOutlet private weak var flipCountLabel: UILabel! {
@@ -44,7 +50,7 @@ class ViewController: UIViewController {
     private func updateFlipCountLabel() {
         let attributes: [NSAttributedString.Key : Any] = [
             .strokeWidth: 5.0,
-            .strokeColor: #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
+            .strokeColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
         ]
         let attributedString = NSAttributedString(string: "Flips \(flipCount)", attributes: attributes)
         flipCountLabel.attributedText = attributedString
@@ -62,10 +68,10 @@ class ViewController: UIViewController {
             let card = game.cards[index]
             if card.isFaceUp {
                 button.setTitle(emoji(for: card), for: UIControl.State.normal)
-                button.backgroundColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+                button.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
             } else {
                 button.setTitle(" ", for: UIControl.State.normal)
-                button.backgroundColor = card.isMatched ? #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0) : #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
+                button.backgroundColor = card.isMatched ? #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0) : #colorLiteral(red: 0.01680417731, green: 0.1983509958, blue: 1, alpha: 1)
             }
         }
     }
