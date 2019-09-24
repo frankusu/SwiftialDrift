@@ -8,14 +8,30 @@
 
 import UIKit
 
-class ConcentrationThemeChooserViewController: UIViewController {
+class ConcentrationThemeChooserViewController: UIViewController, UISplitViewControllerDelegate {
     
     let themes = [ //bad design. What if Button name is not in english
         "Sports" : "⚽️🏀🏈⚾️🥎🎾🏐🏉🎱🏓⛷🎳⛳️",
         "Animals" : "🐶🐱🐭🐹🐰🦊🐻🐼🐨🐯🦁🐮🐷",
         "Faces" : "🙂😍😂😚😎🤩🥰😡🥶😱🙄😮😈👽",
     ]
-
+    //called on every object that comes out of interface builder
+    override func awakeFromNib() {
+        splitViewController?.delegate = self
+    }
+    
+    //primary: master secondary: detail. Collapse detail on master? false = I did not do it, so collapse for me
+    func splitViewController(_ splitViewController: UISplitViewController,
+                             collapseSecondary secondaryViewController: UIViewController,
+                             onto primaryViewController: UIViewController
+    ) ->Bool {
+        if let cvc = secondaryViewController as? ConcentrationViewController {
+            if cvc.theme == nil {
+                return true
+            }
+        }
+        return false
+    }
     @IBAction func chooseTheme(_ sender: Any) {
         //change the theme but doesn't restart the game
         if let cvc = splitViewDetailConcentrationViewController {
